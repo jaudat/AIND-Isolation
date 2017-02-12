@@ -58,8 +58,8 @@ def custom_score(game, player):
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
     if distance != 0:
-        max_side = max(game.width, game.height)
-        return float(own_moves - opp_moves) * float(max_side/distance) # The greater the distance from mid the smaller the multiplier
+        max_side = max(game.width, game.height)//2
+        return float(own_moves - opp_moves) + float(max_side/distance) # The greater the distance from mid the smaller the multiplier
     else:
         return float(own_moves - opp_moves)
 
