@@ -35,8 +35,33 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
 
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # The Heuristic function will be (own_moves - opp_moves) * how close to middle
+    # This is because since there are no wraparounds at the edge of the board, it
+    # is generally better to seek squares in the middle of the board
+
+    # find middle of board
+    mid_row = game.width//2
+    mid_col = game.height//2
+
+    # distance of present point to middle of square
+    player_row, player_col = game.get_player_location(player)
+
+    distance = max( abs(mid_row-player_row), abs(mid_col-player_col) )
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    if distance != 0:
+        max_side = max(game.width, game.height)
+        return float(own_moves - opp_moves) * float(max_side/distance)
+    else:
+        return float(own_moves - opp_moves)
 
 
 class CustomPlayer:

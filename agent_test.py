@@ -77,40 +77,40 @@ def handler(obj, testcase, queue):
         queue.put((sys.exc_info(), None))
 
 
-def timeout(time_limit):
-    """Function decorator for unittest test cases to specify test case timeout.
-
-    The timer mechanism works by spawning a new thread for the test to run in
-    and using the timeout handler for the thread-safe queue class to abort and
-    kill the child thread if it doesn't return within the timeout.
-
-    It is not safe to access system resources (e.g., files) within test cases
-    wrapped by this timer.
-    """
-
-    def wrapUnitTest(testcase):
-
-        @wraps(testcase)
-        def testWrapper(self):
-
-            queue = Queue()
-
-            try:
-                p = Thread(target=handler, args=(self, testcase, queue))
-                p.daemon = True
-                p.start()
-                err, res = queue.get(timeout=time_limit)
-                p.join()
-                if err:
-                    raise err[0](err[1]).with_traceback(err[2])
-                return res
-            except QueueEmptyError:
-                raise TimeoutError("Test aborted due to timeout. Test was " +
-                                   "expected to finish in less than {} second(s).".format(time_limit))
-
-        return testWrapper
-
-    return wrapUnitTest
+# def timeout(time_limit):
+#     """Function decorator for unittest test cases to specify test case timeout.
+#
+#     The timer mechanism works by spawning a new thread for the test to run in
+#     and using the timeout handler for the thread-safe queue class to abort and
+#     kill the child thread if it doesn't return within the timeout.
+#
+#     It is not safe to access system resources (e.g., files) within test cases
+#     wrapped by this timer.
+#     """
+#
+#     def wrapUnitTest(testcase):
+#
+#         @wraps(testcase)
+#         def testWrapper(self):
+#
+#             queue = Queue()
+#
+#             try:
+#                 p = Thread(target=handler, args=(self, testcase, queue))
+#                 p.daemon = True
+#                 p.start()
+#                 err, res = queue.get(timeout=time_limit)
+#                 p.join()
+#                 if err:
+#                     raise err[0](err[1]).with_traceback(err[2])
+#                 return res
+#             except QueueEmptyError:
+#                 raise TimeoutError("Test aborted due to timeout. Test was " +
+#                                    "expected to finish in less than {} second(s).".format(time_limit))
+#
+#         return testWrapper
+#
+#     return wrapUnitTest
 
 
 def makeEvalTable(table):
@@ -227,7 +227,7 @@ class Project1Test(unittest.TestCase):
         board.apply_move(loc2)
         return agentUT, board
 
-    @timeout(5)
+    # @timeout(5)
     # @unittest.skip("Skip eval function test.")  # Uncomment this line to skip test
     def test_heuristic(self):
         """ Test output interface of heuristic score function interface."""
@@ -243,7 +243,7 @@ class Project1Test(unittest.TestCase):
         self.assertIsInstance(game_agent.custom_score(game, player1), float,
             "The heuristic function should return a floating point")
 
-    timeout(5)
+    # @timeout(5)
     # @unittest.skip("Skip simple minimax test.")  # Uncomment this line to skip test
     def test_minimax_interface(self):
         """ Test CustomPlayer.minimax interface with simple input """
@@ -274,7 +274,7 @@ class Project1Test(unittest.TestCase):
                              "point value approximating the score for the " +
                              "branch being searched."))
 
-    timeout(5)
+    # @timeout(5)
     # @unittest.skip("Skip alphabeta test.")  # Uncomment this line to skip test
     def test_alphabeta_interface(self):
         """ Test CustomPlayer.alphabeta interface with simple input """
@@ -305,7 +305,7 @@ class Project1Test(unittest.TestCase):
                              "point value approximating the score for the " +
                              "branch being searched."))
 
-    @timeout(5)
+    # @timeout(5)
     # @unittest.skip("Skip get_move test.")  # Uncomment this line to skip test
     def test_get_move_interface(self):
         """ Test CustomPlayer.get_move interface with simple input """
@@ -357,7 +357,7 @@ class Project1Test(unittest.TestCase):
                        "next move. The move must be one of the legal moves " +
                        "on the current game board."))
 
-    @timeout(5)
+    # @timeout(5)
     # @unittest.skip("Skip minimax test.")  # Uncomment this line to skip test
     def test_minimax(self):
         """ Test CustomPlayer.minimax
@@ -422,7 +422,7 @@ class Project1Test(unittest.TestCase):
             self.assertIn(move, expected_moves[idx // 2], WRONG_MOVE.format(
                 method, test_depth, expected_moves[idx // 2], move))
 
-    @timeout(20)
+    # @timeout(20)
     # @unittest.skip("Skip alpha-beta test.")  # Uncomment this line to skip test
     def test_alphabeta(self):
         """ Test CustomPlayer.alphabeta
@@ -477,7 +477,7 @@ class Project1Test(unittest.TestCase):
                 method, test_depth, first_branch, move))
 
 
-    @timeout(20)
+    # @timeout(20)
     # @unittest.skip("Skip iterative deepening test.")  # Uncomment this line to skip test
     def test_get_move(self):
         """ Test iterative deepening in CustomPlayer.get_move by placing an
