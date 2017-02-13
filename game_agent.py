@@ -6,6 +6,7 @@ augment the test suite with your own test cases to further test your code.
 You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
+import math
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
@@ -41,6 +42,9 @@ def custom_score(game, player):
     if game.is_winner(player):
         return float("inf")
 
+    return diff_distance_from_mid(game, player)
+
+def within_radius(game, player):
     # The Heuristic function will be (own_moves - opp_moves) * how close to middle
     # This is because since there are no wraparounds at the edge of the board, it
     # is generally better to seek squares in the middle of the board
@@ -52,16 +56,75 @@ def custom_score(game, player):
     # distance of present point to middle of square
     player_row, player_col = game.get_player_location(player)
 
-    distance = max( abs(mid_row-player_row), abs(mid_col-player_col) )
+    level = max( abs(mid_row-player_row), abs(mid_col-player_col) )
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
-    if distance != 0:
-        max_side = max(game.width, game.height)//2
-        return float(own_moves - opp_moves) + float(max_side/distance) # The greater the distance from mid the smaller the multiplier
+    if level > 0:
+        # max_side = max(game.width, game.height) // 2
+        return float(own_moves - opp_moves) + float(1/level)
     else:
         return float(own_moves - opp_moves)
+
+
+def own_distance_from_mid(game, player):
+    # The Heuristic function will be (own_moves - opp_moves) + 1/distance_from_midpoint_of_player
+    # This is because since there are no wraparounds at the edge of the board, it
+    # is generally better to seek squares in the middle of the board
+
+    # find middle of board
+    mid_row = game.width//2
+    mid_col = game.height//2
+
+    # distance of present point to middle of square
+    own_row, own_col = game.get_player_location(player)
+
+    row_diff = math.pow(own_row - mid_row, 2)
+    col_diff = math.pow(own_col - mid_col, 2)
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    if row_diff+col_diff > 0:
+        return float(own_moves - opp_moves) + float( 1/math.sqrt(row_diff + col_diff) ) # The greater the distance from mid the smaller the weight
+    else:
+        return float(own_moves - opp_moves)
+
+
+def diff_distance_from_mid(game, player):
+    # The Heuristic function will be
+    # (own_moves - opp_moves) + 1/distance_from_midpoint_of_player - 1/distance_from_midpoint_of_opponent
+    # This is because since there are no wraparounds at the edge of the board, it is generally better to seek squares
+    # in the middle of the board if you are the player, and to force the opponent to the edge.
+
+    # find middle of board
+    mid_row = game.width//2
+    mid_col = game.height//2
+
+    # distance of present point to middle of square
+    own_row, own_col = game.get_player_location(player)
+    own_row_diff = math.pow(own_row - mid_row, 2)
+    own_col_diff = math.pow(own_col - mid_col, 2)
+
+    opp_row, opp_col = game.get_player_location(game.get_opponent(player))
+    opp_row_diff = math.pow(opp_row - mid_row, 2)
+    opp_col_diff = math.pow(opp_col - mid_col, 2)
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    # weight = 0
+    # if (own_row_diff+own_col_diff) > 0:
+    #     weight += float( 1/math.sqrt(own_row_diff + own_col_diff) ) # The greater the distance from mid of player the smaller the weight
+    # if (opp_row_diff+opp_col_diff) > 0:
+    #     weight -= float( 1/math.sqrt(opp_row_diff + opp_col_diff) ) # The greater the distance from mid of opponent the larger the weight
+
+    # The greater the distance from mid of player the smaller the weight
+    # The greater the distance from mid of opponent the larger the weight
+    weight = math.sqrt(opp_row_diff + opp_col_diff) - math.sqrt(own_row_diff + own_col_diff)
+
+    return float(own_moves - opp_moves) + weight
 
 
 class CustomPlayer:
